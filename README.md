@@ -9,4 +9,4 @@ runtime for Bluetooth OBEX support.
 
 ## License
 
-[GPLv3](LICENSE)
+[GPL-3.0-or-later](LICENSE)

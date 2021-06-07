@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
+# SPDX-License-Identifier: GPL-3.0-or-later
 from abc import ABC, abstractmethod
 from typing import Optional
 

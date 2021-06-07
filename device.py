@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 class Device:
     """
     Represent the information about a device.

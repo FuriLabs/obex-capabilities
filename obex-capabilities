@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+# SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from argparse import ArgumentParser, SUPPRESS
 from logging import debug, basicConfig, DEBUG, WARNING
