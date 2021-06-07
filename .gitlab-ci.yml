@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+image: alpine:edge
+stages:
+  - test
+
+test:
+  stage: test
+  before_script:
+    - apk add py3-pytest py3-dbus
+  script:
+    - pytest
