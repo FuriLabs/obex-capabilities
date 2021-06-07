@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!DOCTYPE Capability SYSTEM "obex-capability.dtd">
+<Capability Version="1.0">
+ <General>
+  <Manufacturer></Manufacturer>
+  <Model></Model>
+  <SN></SN>
+  <SW version=""/>
+  <OS version="" id=""/>
+  <Ext>
+   <XNam>NetworkInfo</XNam>
+  </Ext>
+ </General>
+ <Service>
+  <UUID>SYNCML-SYNC</UUID>
+  <Name>SyncML</Name>
+  <Version>1.2</Version>
+  <Object>
+   <Type>application/vnd.syncml+wbxml</Type>
+   <Ext>
+    <XVal>application/vnd.syncml.ds.notification</XVal>
+    <XNam>ServerAlertedNotificationType</XNam>
+   </Ext>
+  </Object>
+ </Service>
+</Capability>

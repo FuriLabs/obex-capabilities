@@ -1,0 +1,105 @@
+#!/usr/bin/python3
+
+from argparse import ArgumentParser
+from logging import debug, basicConfig, DEBUG, WARNING
+from xml.etree import ElementTree
+from typing import Tuple
+
+from device import Device
+from modem import *
+
+XML_TEMPLATE = 'data/template.xml'
+DEVICEINFO_PATH = '/etc/deviceinfo'
+OS_RELEASE_PATH = '/etc/os-release'
+
+def generate_capabilities(device: Device, modem: Modem):
+    tree = ElementTree.parse(XML_TEMPLATE)
+    root = tree.getroot()
+
+    debug('Generating capabilities')
+
+    # Device and OS information
+    manufacturer = root.findall('./General/Manufacturer')[0]
+    model = root.findall('./General/Model')[0]
+    unique_id = root.findall('./General/SN')[0]
+    software = root.findall('./General/SW')[0]
+    os = root.findall('./General/OS')[0]
+    manufacturer.text = device.manufacturer
+    model.text = device.model
+    unique_id.text = device.unique_id
+    software.set('version', device.software_version)
+    os.set('version', device.os_version)
+    os.set('id', device.codename)
+
+    # Modem information
+    ext = root.findall('./General/Ext')[0]
+    current_network = ElementTree.SubElement(ext, 'XVal')
+    current_network.text = f'CurrentNetwork={modem.network}'
+    country_code = ElementTree.SubElement(ext, 'XVal')
+    country_code.text = f'CountryCode={modem.mcc}'
+    modem_id = ElementTree.SubElement(ext, 'XVal')
+    modem_id.text = f'NetworkID={modem.mnc}'
+
+    debug('Generation complete, serializing XML')
+
+    # Pretty print to stdout for obexd
+    ElementTree.indent(tree, space=' ')
+    capabilities = ElementTree.tostring(root).decode()
+    print(capabilities)
+
+
+def fetch_device_information(deviceinfo_path: str = DEVICEINFO_PATH,
+                             os_release_path: str = OS_RELEASE_PATH) \
+                                     -> Tuple[Modem, Device]:
+    modem: Modem = None
+    device: Device = None
+
+    debug('Fetching device information')
+
+    # Read deviceinfo and os-release
+    device_args = {}
+    device_keys = ['name', 'manufacturer', 'codename', 'version_id']
+
+    lines = []
+    with open(OS_RELEASE_PATH) as f:
+        lines += f.readlines()
+    with open(DEVICEINFO_PATH) as f:
+        lines += f.readlines()
+
+    for l in filter(lambda line: '=' in line, lines):
+        key, value = l.split('=')
+        key = key.replace('deviceinfo_', '').lower()
+        if any(key == i for i in device_keys):
+            device_args[key] = value.strip().replace('"', '')
+
+    assert set(device_args.keys()) == set(device_keys), \
+            'Unable to fully determine device information'
+
+    modem = ModemManager()
+    device = Device (device_args['manufacturer'], device_args['name'],
+                     device_args['codename'], modem.imei,
+                     device_args['version_id'], device_args['version_id'])
+
+    debug(modem)
+    debug(device)
+
+    return modem, device
+
+
+if __name__ == '__main__':
+    # Parse arguments
+    parser = ArgumentParser(description='Generator tool for OBEX capabilities')
+    parser.add_argument('--debug', help='Enable logging to stderr',
+                        dest='debug', action='store_true')
+    parser.set_defaults(debug=False)
+    args = parser.parse_args()
+
+    # Configure logging
+    lvl = WARNING
+    if args.debug:
+        lvl = DEBUG
+    basicConfig(level=lvl)
+
+    # Generate capabilities
+    modem, device = fetch_device_information()
+    generate_capabilities(device, modem)
