@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from dbus import SystemBus, Interface
 
@@ -12,6 +13,7 @@ MM_METHOD_GET_LOCATION = 'GetLocation'
 MM_INTERFACE_MODEM_3GPP = 'org.freedesktop.ModemManager1.Modem.Modem3gpp'
 MM_METHOD_GET = 'Get'
 MM_LOCATION_3GPP = 1
+
 
 class Modem(ABC):
     def __repr__(self):
@@ -61,6 +63,7 @@ class Ofono(Modem):
     """
     def __init__(self):
         super().__init__()
+        raise NotImplementedError()
 
     @property
     def imei(self) -> str:
@@ -138,6 +141,10 @@ class MockedModem(Modem):
         super().__init__()
 
     @property
+    def imei(self) -> str:
+        return '123456789012345'
+
+    @property
     def network(self) -> str:
         return 'NetworkName'
 
@@ -148,3 +155,26 @@ class MockedModem(Modem):
     @property
     def mnc(self) -> str:
         return '42'
+
+
+def guess_modem() -> Optional[Modem]:
+    """
+    Tries to access the DBus interface of each support modem backend.
+    The first backend that is available will be returned.
+    """
+
+    # ModemManager
+    try:
+        m = ModemManager()
+        return m
+    except:
+        pass
+
+    # Ofono
+    try:
+        m = Ofono()
+        return m
+    except:
+        pass
+
+    return None

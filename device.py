@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-
-
 class Device:
     """
     Represent the information about a device.

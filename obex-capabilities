@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, SUPPRESS
 from logging import debug, basicConfig, DEBUG, WARNING
 from xml.etree import ElementTree
 from typing import Tuple
+from os import environ
+from os.path import abspath
 
 from device import Device
 from modem import *
@@ -11,6 +13,8 @@ from modem import *
 XML_TEMPLATE = 'data/template.xml'
 DEVICEINFO_PATH = '/etc/deviceinfo'
 OS_RELEASE_PATH = '/etc/os-release'
+MACHINE_ID_PATH = '/etc/machine-id'
+
 
 def generate_capabilities(device: Device, modem: Modem):
     tree = ElementTree.parse(XML_TEMPLATE)
@@ -32,13 +36,17 @@ def generate_capabilities(device: Device, modem: Modem):
     os.set('id', device.codename)
 
     # Modem information
-    ext = root.findall('./General/Ext')[0]
-    current_network = ElementTree.SubElement(ext, 'XVal')
-    current_network.text = f'CurrentNetwork={modem.network}'
-    country_code = ElementTree.SubElement(ext, 'XVal')
-    country_code.text = f'CountryCode={modem.mcc}'
-    modem_id = ElementTree.SubElement(ext, 'XVal')
-    modem_id.text = f'NetworkID={modem.mnc}'
+    if modem is not None:
+        general = root.findall('./General')[0]
+        ext = ElementTree.SubElement(general, 'Ext')
+        xnam = ElementTree.SubElement(ext, 'XNam')
+        xnam.text = 'NetworkInfo'
+        current_network = ElementTree.SubElement(ext, 'XVal')
+        current_network.text = f'CurrentNetwork={modem.network}'
+        country_code = ElementTree.SubElement(ext, 'XVal')
+        country_code.text = f'CountryCode={modem.mcc}'
+        modem_id = ElementTree.SubElement(ext, 'XVal')
+        modem_id.text = f'NetworkID={modem.mnc}'
 
     debug('Generation complete, serializing XML')
 
@@ -48,9 +56,8 @@ def generate_capabilities(device: Device, modem: Modem):
     print(capabilities)
 
 
-def fetch_device_information(deviceinfo_path: str = DEVICEINFO_PATH,
-                             os_release_path: str = OS_RELEASE_PATH) \
-                                     -> Tuple[Modem, Device]:
+def fetch_device_information(deviceinfo_path: str, os_release_path: str,
+                             machine_id_path: str) -> Tuple[Modem, Device]:
     modem: Modem = None
     device: Device = None
 
@@ -61,9 +68,9 @@ def fetch_device_information(deviceinfo_path: str = DEVICEINFO_PATH,
     device_keys = ['name', 'manufacturer', 'codename', 'version_id']
 
     lines = []
-    with open(OS_RELEASE_PATH) as f:
+    with open(os_release_path) as f:
         lines += f.readlines()
-    with open(DEVICEINFO_PATH) as f:
+    with open(deviceinfo_path) as f:
         lines += f.readlines()
 
     for l in filter(lambda line: '=' in line, lines):
@@ -75,9 +82,19 @@ def fetch_device_information(deviceinfo_path: str = DEVICEINFO_PATH,
     assert set(device_args.keys()) == set(device_keys), \
             'Unable to fully determine device information'
 
-    modem = ModemManager()
+    modem = guess_modem()
+
+    unique_id = ''
+    if modem is not None:
+       debug('Found modem, using IMEI')
+       unique_id = modem.imei
+    else:
+        debug('No modem available, using machine-id')
+        with open(machine_id_path) as f:
+            unique_id = f.read().strip()
+
     device = Device (device_args['manufacturer'], device_args['name'],
-                     device_args['codename'], modem.imei,
+                     device_args['codename'], unique_id,
                      device_args['version_id'], device_args['version_id'])
 
     debug(modem)
@@ -91,7 +108,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Generator tool for OBEX capabilities')
     parser.add_argument('--debug', help='Enable logging to stderr',
                         dest='debug', action='store_true')
-    parser.set_defaults(debug=False)
+    parser.set_defaults(debug=False, test=False)
     args = parser.parse_args()
 
     # Configure logging
@@ -100,6 +117,15 @@ if __name__ == '__main__':
         lvl = DEBUG
     basicConfig(level=lvl)
 
+    # Fetch device information
+    deviceinfo_path = environ.get('DEVICEINFO_PATH', DEVICEINFO_PATH)
+    os_release_path = environ.get('OS_RELEASE_PATH', OS_RELEASE_PATH)
+    machine_id_path = environ.get('MACHINE_ID_PATH', MACHINE_ID_PATH)
+    modem, device = fetch_device_information(deviceinfo_path, os_release_path,
+                                             machine_id_path)
+    # Mock modem is env variable is set
+    if 'MOCK_MODEM' in environ:
+        modem = MockedModem()
+
     # Generate capabilities
-    modem, device = fetch_device_information()
     generate_capabilities(device, modem)

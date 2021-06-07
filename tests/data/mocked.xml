@@ -1,12 +1,16 @@
-<?xml version="1.0"?>
-<!DOCTYPE Capability SYSTEM "obex-capability.dtd">
 <Capability Version="1.0">
  <General>
-  <Manufacturer></Manufacturer>
-  <Model></Model>
-  <SN></SN>
-  <SW version=""/>
-  <OS version="" id=""/>
+  <Manufacturer>PINE64</Manufacturer>
+  <Model>PINE64 PinePhone</Model>
+  <SN>dgfdklfgj5sdkgdrjg5fg54g4dg5ddfd</SN>
+  <SW version="edge" />
+  <OS version="edge" id="pine64-pinephone" />
+  <Ext>
+   <XNam>NetworkInfo</XNam>
+   <XVal>CurrentNetwork=NetworkName</XVal>
+   <XVal>CountryCode=123</XVal>
+   <XVal>NetworkID=42</XVal>
+  </Ext>
  </General>
  <Service>
   <UUID>SYNCML-SYNC</UUID>
