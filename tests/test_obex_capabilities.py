@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import subprocess
 
-from device import *
-from modem import *
+from obex_capabilities.device import Device
+from obex_capabilities.modem import MockedModem
 
 def test_device():
     d = Device('Manufacturer', 'Phone', 'my-awesome-codename',
@@ -31,7 +31,7 @@ def test_obex_capabilities():
             'OS_RELEASE_PATH': './tests/data/os-release',
             'MACHINE_ID_PATH': './tests/data/machine-id',
             'MOCK_MODEM': '1' }
-    xml = subprocess.check_output('./obex-capabilities',
+    xml = subprocess.check_output('./obex_capabilities/__init__.py',
                                   env=env).decode()
     print(xml)
     print('-'*50)
@@ -46,6 +46,6 @@ def test_obex_capabilities_no_modem():
     env = { 'DEVICEINFO_PATH': './tests/data/deviceinfo',
             'OS_RELEASE_PATH': './tests/data/os-release',
             'MACHINE_ID_PATH': './tests/data/machine-id' }
-    xml = subprocess.check_output('./obex-capabilities',
+    xml = subprocess.check_output('./obex_capabilities/__init__.py',
                                   env=env).decode()
     assert xml == expected_xml

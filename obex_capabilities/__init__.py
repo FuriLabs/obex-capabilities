@@ -1,6 +1,12 @@
 #!/usr/bin/python3
 # SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
 # SPDX-License-Identifier: GPL-3.0-or-later
+import os
+import sys
+
+# Add topdir to import path
+topdir = os.path.realpath(os.path.join(os.path.dirname(__file__) + "/.."))
+sys.path.insert(0, topdir)
 
 from argparse import ArgumentParser, SUPPRESS
 from logging import debug, basicConfig, DEBUG, WARNING
@@ -9,9 +15,10 @@ from typing import Tuple
 from os import environ
 from os.path import abspath
 
-from device import Device
-from modem import *
+from obex_capabilities.device import Device
+from obex_capabilities.modem import Modem, MockedModem, guess_modem
 
+VERSION = '0.0.1'
 XML_TEMPLATE = 'data/template.xml'
 DEVICEINFO_PATH = '/etc/deviceinfo'
 OS_RELEASE_PATH = '/etc/os-release'
@@ -105,7 +112,7 @@ def fetch_device_information(deviceinfo_path: str, os_release_path: str,
     return modem, device
 
 
-if __name__ == '__main__':
+def main():
     # Parse arguments
     parser = ArgumentParser(description='Generator tool for OBEX capabilities')
     parser.add_argument('--debug', help='Enable logging to stderr',
@@ -131,3 +138,7 @@ if __name__ == '__main__':
 
     # Generate capabilities
     generate_capabilities(device, modem)
+
+
+if __name__ == '__main__':
+    main()

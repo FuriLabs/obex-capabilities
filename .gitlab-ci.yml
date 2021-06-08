@@ -4,6 +4,7 @@
 image: alpine:edge
 stages:
   - test
+  - package
 
 test:
   stage: test
@@ -11,3 +12,15 @@ test:
     - apk add py3-pytest py3-dbus
   script:
     - pytest
+
+package:
+  stage: package
+  variables:
+    DEVICEINFO_PATH: "./tests/data/deviceinfo"
+    OS_RELEASE_PATH: "./tests/data/os-release"
+    MACHINE_ID_PATH: "./tests/data/machine-id"
+  before_script:
+    - apk add py3-setuptools py3-pytest py3-dbus
+  script:
+    - python3 setup.py install
+    - obex-capabilities
