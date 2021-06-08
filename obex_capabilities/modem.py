@@ -202,6 +202,7 @@ def guess_modem() -> Optional[Modem]:
 
     # ModemManager
     try:
+        debug('Trying to access ModemManager DBus interface')
         m = ModemManager()
         return m
     except:
@@ -209,9 +210,11 @@ def guess_modem() -> Optional[Modem]:
 
     # Ofono
     try:
+        debug('Trying to access oFono DBus interface')
         m = Ofono()
         return m
     except:
         pass
 
+    debug('No suitable modem backend available')
     return None
