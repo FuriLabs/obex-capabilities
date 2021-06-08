@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from abc import ABC, abstractmethod
 from typing import Optional
+from logging import debug
 
 from dbus import SystemBus, Interface
 
@@ -15,6 +16,13 @@ MM_METHOD_GET_LOCATION = 'GetLocation'
 MM_INTERFACE_MODEM_3GPP = 'org.freedesktop.ModemManager1.Modem.Modem3gpp'
 MM_METHOD_GET = 'Get'
 MM_LOCATION_3GPP = 1
+OFONO_NAME = 'org.ofono'
+OFONO_OBJECT_PATH = '/'
+OFONO_INTERFACE_MANAGER = 'org.ofono.Manager'
+OFONO_METHOD_GET_MODEMS = 'GetModems'
+OFONO_INTERFACE_NETWORK_REGISTRATION = 'org.ofono.NetworkRegistration'
+OFONO_METHOD_GET_PROPERTIES = 'GetProperties'
+OFONO_INTERFACE_MODEM = 'org.ofono.Modem'
 
 
 class Modem(ABC):
@@ -65,23 +73,49 @@ class Ofono(Modem):
     """
     def __init__(self):
         super().__init__()
-        raise NotImplementedError()
+        self._dbus: SystemBus = SystemBus()
+
+        # Get exposed Modem objects
+        o = self._dbus.get_object(OFONO_NAME, OFONO_OBJECT_PATH)
+        self._object_manager_interface: Interface = Interface(o, OFONO_INTERFACE_MANAGER)
+        modems = self._object_manager_interface.get_dbus_method(OFONO_METHOD_GET_MODEMS)
+
+        if modems:
+            # Execute DBus method to get modems and use the first one
+            object_path : str = list(dict(modems()).keys())[0]
+            debug(f'Found oFono modem: {object_path}')
+            o = self._dbus.get_object(OFONO_NAME, object_path)
+
+            # Init DBus oFono NetworkRegistration and Modem interfaces
+            self._network_registration_interface: Interface = Interface(o, OFONO_INTERFACE_NETWORK_REGISTRATION)
+            self._modem_interface: Interface = Interface(o, OFONO_INTERFACE_MODEM)
+
+            # Get IMEI, network and location information
+            props: dict = {}
+            props = self._network_registration_interface.GetProperties()
+            self._mcc: str = props['MobileCountryCode']
+            self._mnc: str = props['MobileNetworkCode']
+            self._network: str = props['Name']
+            props = self._modem_interface.GetProperties()
+            self._imei: str = props['Serial']
+        else:
+            raise RuntimeError('Unable to find oFono modem')
 
     @property
     def imei(self) -> str:
-        return '123456789012345'
+       return self._imei
 
     @property
     def network(self) -> str:
-        return 'NetworkName'
+        return self._network
 
     @property
     def mcc(self) -> str:
-        return '123'
+        return self._mcc
 
     @property
     def mnc(self) -> str:
-        return '42'
+        return self._mnc
 
 
 class ModemManager(Modem):
@@ -100,6 +134,7 @@ class ModemManager(Modem):
         if modems:
             # Execute DBus method to get modems and use the first one
             object_path : str = list(modems().keys())[0]
+            debug(f'Found ModemManager modem: {object_path}')
             o = self._dbus.get_object(MM_NAME, object_path)
 
             # Init DBus MM 3GPP and Location interfaces
