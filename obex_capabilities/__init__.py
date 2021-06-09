@@ -18,7 +18,7 @@ from os.path import abspath
 from obex_capabilities.device import Device
 from obex_capabilities.modem import Modem, MockedModem, guess_modem
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 XML_TEMPLATE = 'data/template.xml'
 DEVICEINFO_PATH = '/etc/deviceinfo'
 OS_RELEASE_PATH = '/etc/os-release'
