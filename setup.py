@@ -56,7 +56,6 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     keywords='obex capabilities bluetooth',
-    data_files=[('data', ['data/template.xml'])],
     packages=find_packages(exclude=['data', 'tests']),
     tests_require=['pytest'],
     cmdclass={'test': PyTest},

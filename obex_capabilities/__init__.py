@@ -23,10 +23,32 @@ XML_TEMPLATE = 'data/template.xml'
 DEVICEINFO_PATH = '/etc/deviceinfo'
 OS_RELEASE_PATH = '/etc/os-release'
 MACHINE_ID_PATH = '/etc/machine-id'
-
+XML_TEMPLATE = """<?xml version="1.0"?>
+<!DOCTYPE Capability SYSTEM "obex-capability.dtd">
+<Capability Version="1.0">
+ <General>
+  <Manufacturer></Manufacturer>
+  <Model></Model>
+  <SN></SN>
+  <SW version=""/>
+  <OS version="" id=""/>
+ </General>
+ <Service>
+  <UUID>SYNCML-SYNC</UUID>
+  <Name>SyncML</Name>
+  <Version>1.2</Version>
+  <Object>
+   <Type>application/vnd.syncml+wbxml</Type>
+   <Ext>
+    <XVal>application/vnd.syncml.ds.notification</XVal>
+    <XNam>ServerAlertedNotificationType</XNam>
+   </Ext>
+  </Object>
+ </Service>
+</Capability>"""
 
 def generate_capabilities(device: Device, modem: Modem):
-    tree = ElementTree.parse(XML_TEMPLATE)
+    tree = ElementTree.ElementTree(ElementTree.fromstring(XML_TEMPLATE))
     root = tree.getroot()
 
     debug('Generating capabilities')
