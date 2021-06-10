@@ -33,6 +33,7 @@ class Modem(ABC):
             f'\n  MCC: {self.mcc}' \
             f'\n  MNC: {self.mnc}' \
 
+
     def __str__(self):
         return self.__repr__()
 
@@ -77,18 +78,22 @@ class Ofono(Modem):
 
         # Get exposed Modem objects
         o = self._dbus.get_object(OFONO_NAME, OFONO_OBJECT_PATH)
-        self._object_manager_interface: Interface = Interface(o, OFONO_INTERFACE_MANAGER)
-        modems = self._object_manager_interface.get_dbus_method(OFONO_METHOD_GET_MODEMS)
+        self._object_manager_interface: Interface = \
+            Interface(o, OFONO_INTERFACE_MANAGER)
+        modems = self._object_manager_interface\
+            .get_dbus_method(OFONO_METHOD_GET_MODEMS)
 
         if modems:
             # Execute DBus method to get modems and use the first one
-            object_path : str = list(dict(modems()).keys())[0]
+            object_path: str = list(dict(modems()).keys())[0]
             debug(f'Found oFono modem: {object_path}')
             o = self._dbus.get_object(OFONO_NAME, object_path)
 
             # Init DBus oFono NetworkRegistration and Modem interfaces
-            self._network_registration_interface: Interface = Interface(o, OFONO_INTERFACE_NETWORK_REGISTRATION)
-            self._modem_interface: Interface = Interface(o, OFONO_INTERFACE_MODEM)
+            self._network_registration_interface: Interface = \
+                Interface(o, OFONO_INTERFACE_NETWORK_REGISTRATION)
+            self._modem_interface: Interface = \
+                Interface(o, OFONO_INTERFACE_MODEM)
 
             # Get IMEI, network and location information
             props: dict = {}
@@ -103,7 +108,7 @@ class Ofono(Modem):
 
     @property
     def imei(self) -> str:
-       return self._imei
+        return self._imei
 
     @property
     def network(self) -> str:
@@ -128,28 +133,34 @@ class ModemManager(Modem):
 
         # Get exposed Modem objects
         o = self._dbus.get_object(MM_NAME, MM_OBJECT_PATH)
-        self._object_manager_interface: Interface = Interface(o, FREEDESKTOP_INTERFACE_OBJECT_MANAGER)
-        modems = self._object_manager_interface.get_dbus_method(FREEDESKTOP_METHOD_GET_MANAGED_OBJECTS)
+        self._object_manager_interface: Interface = \
+            Interface(o, FREEDESKTOP_INTERFACE_OBJECT_MANAGER)
+        modems = self._object_manager_interface\
+            .get_dbus_method(FREEDESKTOP_METHOD_GET_MANAGED_OBJECTS)
 
         if modems:
             # Execute DBus method to get modems and use the first one
-            object_path : str = list(modems().keys())[0]
+            object_path: str = list(modems().keys())[0]
             debug(f'Found ModemManager modem: {object_path}')
             o = self._dbus.get_object(MM_NAME, object_path)
 
             # Init DBus MM 3GPP and Location interfaces
-            self._location_interface: Interface = Interface(o, MM_INTERFACE_LOCATION)
-            self._3gpp_interface: Interface = Interface(o, MM_INTERFACE_MODEM_3GPP)
+            self._location_interface: Interface = \
+                Interface(o, MM_INTERFACE_LOCATION)
+            self._3gpp_interface: Interface = \
+                Interface(o, MM_INTERFACE_MODEM_3GPP)
 
             # Get IMEI, network and location information
-            self._imei: str = self._3gpp_interface.Get(MM_INTERFACE_MODEM_3GPP,
-                                                       'Imei',
-                                                       dbus_interface=FREEDESKTOP_INTERFACE_PROPERTIES)
-            self._network: str = self._3gpp_interface.Get(MM_INTERFACE_MODEM_3GPP,
-                                                          'OperatorName',
-                                                          dbus_interface=FREEDESKTOP_INTERFACE_PROPERTIES)
-            location: dict = self._location_interface.get_dbus_method(MM_METHOD_GET_LOCATION)
-            self._mcc, self._mnc, _, _, _ = location()[MM_LOCATION_3GPP].split(',')
+            self._imei: str = self._3gpp_interface\
+                .Get(MM_INTERFACE_MODEM_3GPP, 'Imei',
+                     dbus_interface=FREEDESKTOP_INTERFACE_PROPERTIES)
+            self._network: str = self._3gpp_interface\
+                .Get(MM_INTERFACE_MODEM_3GPP, 'OperatorName',
+                     dbus_interface=FREEDESKTOP_INTERFACE_PROPERTIES)
+            location: dict = self._location_interface\
+                .get_dbus_method(MM_METHOD_GET_LOCATION)
+            location_3gpp: str = location()[MM_LOCATION_3GPP]
+            self._mcc, self._mnc, _, _, _ = location_3gpp.split(',')
         else:
             raise RuntimeError('Unable to find ModemManager modem')
 

@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 # SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
 # SPDX-License-Identifier: GPL-3.0-or-later
-import os
 import sys
+from os.path import realpath, join, dirname
 
 # Add topdir to import path
-topdir = os.path.realpath(os.path.join(os.path.dirname(__file__) + "/.."))
-sys.path.insert(0, topdir)
+topdir = realpath(join(dirname(__file__) + "/.."))  # noqa
+sys.path.insert(0, topdir)  # noqa
 
 from argparse import ArgumentParser, SUPPRESS
 from logging import debug, basicConfig, DEBUG, WARNING
@@ -46,6 +46,7 @@ XML_TEMPLATE = """<?xml version="1.0"?>
   </Object>
  </Service>
 </Capability>"""
+
 
 def generate_capabilities(device: Device, modem: Modem):
     tree = ElementTree.ElementTree(ElementTree.fromstring(XML_TEMPLATE))
@@ -103,21 +104,21 @@ def fetch_device_information(deviceinfo_path: str,
     with open(deviceinfo_path) as f:
         lines += f.readlines()
 
-    for l in filter(lambda line: '=' in line, lines):
-        key, value = l.split('=')
+    for line in filter(lambda line: '=' in line, lines):
+        key, value = line.split('=')
         key = key.replace('deviceinfo_', '').lower()
         if any(key == i for i in device_keys):
             device_args[key] = value.strip().replace('"', '')
 
     assert set(device_args.keys()) == set(device_keys), \
-            'Unable to fully determine device information'
+        'Unable to fully determine device information'
 
     modem: Optional[Modem] = guess_modem()
 
     unique_id: str
     if modem is not None:
-       debug('Found modem, using IMEI')
-       unique_id = cast(str, modem.imei)
+        debug('Found modem, using IMEI')
+        unique_id = cast(str, modem.imei)
     else:
         debug('No modem available, using machine-id')
         with open(machine_id_path) as f:

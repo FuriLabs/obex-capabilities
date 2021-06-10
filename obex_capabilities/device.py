@@ -67,4 +67,3 @@ class Device:
         OS version release number.
         """
         return self._os_version
-
