@@ -11,7 +11,7 @@ sys.path.insert(0, topdir)
 from argparse import ArgumentParser, SUPPRESS
 from logging import debug, basicConfig, DEBUG, WARNING
 from xml.etree import ElementTree
-from typing import Tuple
+from typing import Tuple, Optional, cast
 from os import environ
 from os.path import abspath
 
@@ -87,11 +87,10 @@ def generate_capabilities(device: Device, modem: Modem):
     print(capabilities)
 
 
-def fetch_device_information(deviceinfo_path: str, os_release_path: str,
-                             machine_id_path: str) -> Tuple[Modem, Device]:
-    modem: Modem = None
-    device: Device = None
-
+def fetch_device_information(deviceinfo_path: str,
+                             os_release_path: str,
+                             machine_id_path: str) \
+                                -> Tuple[Optional[Modem], Device]:
     debug('Fetching device information')
 
     # Read deviceinfo and os-release
@@ -113,20 +112,23 @@ def fetch_device_information(deviceinfo_path: str, os_release_path: str,
     assert set(device_args.keys()) == set(device_keys), \
             'Unable to fully determine device information'
 
-    modem = guess_modem()
+    modem: Optional[Modem] = guess_modem()
 
-    unique_id = ''
+    unique_id: str
     if modem is not None:
        debug('Found modem, using IMEI')
-       unique_id = modem.imei
+       unique_id = cast(str, modem.imei)
     else:
         debug('No modem available, using machine-id')
         with open(machine_id_path) as f:
             unique_id = f.read().strip()
 
-    device = Device (device_args['manufacturer'], device_args['name'],
-                     device_args['codename'], unique_id,
-                     device_args['version_id'], device_args['version_id'])
+    device: Device = Device(device_args['manufacturer'],
+                            device_args['name'],
+                            device_args['codename'],
+                            unique_id,
+                            device_args['version_id'],
+                            device_args['version_id'])
 
     debug(modem)
     debug(device)

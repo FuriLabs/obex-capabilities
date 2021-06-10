@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from logging import debug, warning
 
-from dbus import SystemBus, Interface
+from dbus import SystemBus, Interface  # type: ignore
 
 FREEDESKTOP_INTERFACE_PROPERTIES = 'org.freedesktop.DBus.Properties'
 FREEDESKTOP_INTERFACE_OBJECT_MANAGER = 'org.freedesktop.DBus.ObjectManager'
@@ -199,6 +199,7 @@ def guess_modem() -> Optional[Modem]:
     Tries to access the DBus interface of each support modem backend.
     The first backend that is available will be returned.
     """
+    m: Optional[Modem] = None
 
     # ModemManager
     try:
@@ -217,4 +218,4 @@ def guess_modem() -> Optional[Modem]:
         warning(f'Unable to use oFono DBus interface: {e}')
 
     debug('No suitable modem backend available')
-    return None
+    return m

@@ -9,9 +9,10 @@ stages:
 test:
   stage: test
   before_script:
-    - apk add py3-pytest py3-dbus
+    - apk add py3-pytest py3-dbus py3-mypy
   script:
     - pytest
+    - mypy obex_capabilities
 
 package:
   stage: package
