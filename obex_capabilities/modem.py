@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from abc import ABC, abstractmethod
 from typing import Optional
-from logging import debug
+from logging import debug, warning
 
 from dbus import SystemBus, Interface
 
@@ -205,16 +205,16 @@ def guess_modem() -> Optional[Modem]:
         debug('Trying to access ModemManager DBus interface')
         m = ModemManager()
         return m
-    except:
-        pass
+    except Exception as e:
+        warning(f'Unable to use ModemManager DBus interface: {e}')
 
     # Ofono
     try:
         debug('Trying to access oFono DBus interface')
         m = Ofono()
         return m
-    except:
-        pass
+    except Exception as e:
+        warning(f'Unable to use oFono DBus interface: {e}')
 
     debug('No suitable modem backend available')
     return None
