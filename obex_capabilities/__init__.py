@@ -115,6 +115,11 @@ def fetch_device_information(deviceinfo_path: str,
 
     modem: Optional[Modem] = guess_modem()
 
+    # Mock modem is env variable is set
+    if environ.get('MOCK_MODEM', False):
+        debug('Mocking modem')
+        modem = MockedModem()
+
     unique_id: str
     if modem is not None:
         debug('Found modem, using IMEI')
@@ -157,9 +162,6 @@ def main():
     machine_id_path = environ.get('MACHINE_ID_PATH', MACHINE_ID_PATH)
     modem, device = fetch_device_information(deviceinfo_path, os_release_path,
                                              machine_id_path)
-    # Mock modem is env variable is set
-    if 'MOCK_MODEM' in environ:
-        modem = MockedModem()
 
     # Generate capabilities
     generate_capabilities(device, modem)
