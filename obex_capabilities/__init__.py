@@ -48,7 +48,7 @@ XML_TEMPLATE = """<?xml version="1.0"?>
 </Capability>"""
 
 
-def generate_capabilities(device: Device, modem: Modem):
+def generate_capabilities(device: Device, modem: Optional[Modem]):
     tree = ElementTree.ElementTree(ElementTree.fromstring(XML_TEMPLATE))
     root = tree.getroot()
 
