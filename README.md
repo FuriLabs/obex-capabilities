@@ -32,6 +32,10 @@ pytest
 python3 setup.py install
 ```
 
+## OBEX Capability specification
+
+https://www.irda.org/standards/pubs/OBEX13.pdf
+
 ## License
 
 [GPL-3.0-or-later](LICENSE)
