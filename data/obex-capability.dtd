@@ -1,0 +1,41 @@
+<!ELEMENT Capability (General, Inbox?, Service*)>
+<!ATTLIST Capability Version CDATA "1.0">
+<!ELEMENT General (Manufacturer, Model, SN?, OEM?, SW?, FW?, HW?, Language?, Memory*, Ext*)>
+<!ELEMENT Manufacturer (#PCDATA)>
+<!ELEMENT Model (#PCDATA)>
+<!ELEMENT SN (#PCDATA)>
+<!ELEMENT OEM (#PCDATA)>
+<!ELEMENT SW EMPTY>
+<!ATTLIST SW  Version CDATA #IMPLIED Date CDATA #IMPLIED>
+<!ELEMENT FW EMPTY>
+<!ATTLIST FW  Version CDATA #IMPLIED Date CDATA #IMPLIED>
+<!ELEMENT HW EMPTY>
+<!ATTLIST HW  Version CDATA #IMPLIED Date CDATA #IMPLIED>
+<!ELEMENT Language (#PCDATA)>
+<!ELEMENT Memory   (MemType?,   Location?,   Free?,   Used?,   Shared?,   FileSize?,   FolderSize?,   FileNLen?, FolderNLen?, CaseSenN?, Ext*)>
+<!ELEMENT MemType (#PCDATA)>
+<!ELEMENT Location (#PCDATA)>
+<!ELEMENT Free (#PCDATA)>
+<!ELEMENT Used (#PCDATA)>
+<!ELEMENT Shared EMPTY>
+<!ELEMENT FileSize (#PCDATA)>
+<!ELEMENT FolderSize (#PCDATA)>
+<!ELEMENT FileNLen (#PCDATA)>
+<!ELEMENT FolderNLen (#PCDATA)>
+<!ELEMENT CaseSenN EMPTY>
+<!ELEMENT Ext (XNam, XVal*)>
+<!ELEMENT XNam (#PCDATA)>
+<!ELEMENT XVal (#PCDATA)>
+<!ELEMENT Object (((Type, Name-Ext*)|(Type?, Name-Ext+)), Size?, Ext*)>
+<!ELEMENT Inbox (Object*, Ext*)>
+<!ELEMENT Type (#PCDATA)>
+<!ELEMENT Name-Ext (#PCDATA)>
+<!ELEMENT Size (#PCDATA)>
+<!ELEMENT Service (((Name?, UUID)|(Name, UUID?)), Version?, Object*, Access*, Ext*)>
+<!ELEMENT Name (#PCDATA)>
+<!ELEMENT UUID (#PCDATA)>
+<!ELEMENT Version (#PCDATA)>
+<!ELEMENT Access (Protocol? ,Endpoint?, Target?, Ext*)>
+<!ELEMENT Protocol (#PCDATA)>
+<!ELEMENT Endpoint (#PCDATA)>
+<!ELEMENT Target (#PCDATA)>
