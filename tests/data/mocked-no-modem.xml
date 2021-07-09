@@ -1,10 +1,10 @@
 <Capability Version="1.0">
  <General>
-  <Manufacturer>PINE64</Manufacturer>
-  <Model>PINE64 PinePhone</Model>
-  <SN>dgfdklfgj5sdkgdrjg5fg54g4dg5ddfd</SN>
-  <SW version="edge" />
-  <OS version="edge" id="pine64-pinephone" />
+  <Manufacturer>Manufacturer</Manufacturer>
+  <Model>Phone</Model>
+  <SN>123456789012345</SN>
+  <SW version="1.0.0" />
+  <OS version="2.0.0" id="my-awesome-codename" />
  </General>
  <Service>
   <UUID>SYNCML-SYNC</UUID>

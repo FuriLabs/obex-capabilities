@@ -1,10 +1,10 @@
 <Capability Version="1.0">
  <General>
-  <Manufacturer>PINE64</Manufacturer>
-  <Model>PINE64 PinePhone</Model>
+  <Manufacturer>Manufacturer</Manufacturer>
+  <Model>Phone</Model>
   <SN>123456789012345</SN>
-  <SW version="edge" />
-  <OS version="edge" id="pine64-pinephone" />
+  <SW version="1.0.0" />
+  <OS version="2.0.0" id="my-awesome-codename" />
   <Ext>
    <XNam>NetworkInfo</XNam>
    <XVal>CurrentNetwork=NetworkName</XVal>

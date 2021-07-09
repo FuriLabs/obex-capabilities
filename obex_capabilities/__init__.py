@@ -15,14 +15,11 @@ from typing import Tuple, Optional, cast
 from os import environ
 from os.path import abspath
 
-from obex_capabilities.device import Device
-from obex_capabilities.modem import Modem, MockedModem, guess_modem
+from obex_capabilities.device import Device, guess_device
+from obex_capabilities.modem import Modem, guess_modem
 
 VERSION = '0.1.1'
 XML_TEMPLATE = 'data/template.xml'
-DEVICEINFO_PATH = '/etc/deviceinfo'
-OS_RELEASE_PATH = '/etc/os-release'
-MACHINE_ID_PATH = '/etc/machine-id'
 XML_TEMPLATE = """<?xml version="1.0"?>
 <!DOCTYPE Capability SYSTEM "obex-capability.dtd">
 <Capability Version="1.0">
@@ -88,60 +85,6 @@ def generate_capabilities(device: Device, modem: Optional[Modem]):
     print(capabilities)
 
 
-def fetch_device_information(deviceinfo_path: str,
-                             os_release_path: str,
-                             machine_id_path: str) \
-                                -> Tuple[Optional[Modem], Device]:
-    debug('Fetching device information')
-
-    # Read deviceinfo and os-release
-    device_args = {}
-    device_keys = ['name', 'manufacturer', 'codename', 'version_id']
-
-    lines = []
-    with open(os_release_path) as f:
-        lines += f.readlines()
-    with open(deviceinfo_path) as f:
-        lines += f.readlines()
-
-    for line in filter(lambda line: '=' in line, lines):
-        key, value = line.split('=')
-        key = key.replace('deviceinfo_', '').lower()
-        if any(key == i for i in device_keys):
-            device_args[key] = value.strip().replace('"', '')
-
-    assert set(device_args.keys()) == set(device_keys), \
-        'Unable to fully determine device information'
-
-    modem: Optional[Modem] = guess_modem()
-
-    # Mock modem is env variable is set
-    if environ.get('MOCK_MODEM', False):
-        debug('Mocking modem')
-        modem = MockedModem()
-
-    unique_id: str
-    if modem is not None:
-        debug('Found modem, using IMEI')
-        unique_id = cast(str, modem.imei)
-    else:
-        debug('No modem available, using machine-id')
-        with open(machine_id_path) as f:
-            unique_id = f.read().strip()
-
-    device: Device = Device(device_args['manufacturer'],
-                            device_args['name'],
-                            device_args['codename'],
-                            unique_id,
-                            device_args['version_id'],
-                            device_args['version_id'])
-
-    debug(modem)
-    debug(device)
-
-    return modem, device
-
-
 def main():
     # Parse arguments
     parser = ArgumentParser(description='Generator tool for OBEX capabilities')
@@ -156,12 +99,8 @@ def main():
         lvl = DEBUG
     basicConfig(level=lvl)
 
-    # Fetch device information
-    deviceinfo_path = environ.get('DEVICEINFO_PATH', DEVICEINFO_PATH)
-    os_release_path = environ.get('OS_RELEASE_PATH', OS_RELEASE_PATH)
-    machine_id_path = environ.get('MACHINE_ID_PATH', MACHINE_ID_PATH)
-    modem, device = fetch_device_information(deviceinfo_path, os_release_path,
-                                             machine_id_path)
+    device: Device = guess_device()
+    modem: Modem = guess_modem()
 
     # Generate capabilities
     generate_capabilities(device, modem)

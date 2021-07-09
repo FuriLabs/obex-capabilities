@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
 # SPDX-License-Identifier: GPL-3.0-or-later
+from os import environ
 from abc import ABC, abstractmethod
 from typing import Optional
 from logging import debug, warning
@@ -211,6 +212,11 @@ def guess_modem() -> Optional[Modem]:
     The first backend that is available will be returned.
     """
     m: Optional[Modem] = None
+
+    # Mock modem is env variable is set
+    if environ.get("MOCK_MODEM", False):
+        m = MockedModem()
+        return m
 
     # ModemManager
     try:

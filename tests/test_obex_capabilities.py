@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import subprocess
 
-from obex_capabilities.device import Device
-from obex_capabilities.modem import MockedModem
+from obex_capabilities.device import Device, MockedDevice
+from obex_capabilities.modem import Modem, MockedModem
+
 
 def test_device():
-    d = Device('Manufacturer', 'Phone', 'my-awesome-codename',
-               '123456789012345', '1.0.0', '2.0.0')
+    d: Device = MockedDevice()
     assert d.manufacturer == 'Manufacturer'
     assert d.model == 'Phone'
     assert d.codename == 'my-awesome-codename'
@@ -16,7 +16,7 @@ def test_device():
     assert d.os_version == '2.0.0'
 
 def test_modem():
-    m = MockedModem()
+    m: Modem = MockedModem()
     assert m.network == 'NetworkName'
     assert m.mcc == '123'
     assert m.mnc == '42'
@@ -27,15 +27,12 @@ def test_obex_capabilities():
     with open('./tests/data/mocked.xml') as f:
         expected_xml = f.read()
 
-    env = { 'DEVICEINFO_PATH': './tests/data/deviceinfo',
-            'OS_RELEASE_PATH': './tests/data/os-release',
+    env = { 'OS_RELEASE_PATH': './tests/data/os-release',
             'MACHINE_ID_PATH': './tests/data/machine-id',
-            'MOCK_MODEM': '1' }
+            'MOCK_MODEM': '1',
+            'MOCK_DEVICE': '1' }
     xml = subprocess.check_output('./obex_capabilities/__init__.py',
                                   env=env).decode()
-    print(xml)
-    print('-'*50)
-    print(expected_xml)
     assert xml == expected_xml
 
 def test_obex_capabilities_no_modem():
@@ -43,9 +40,9 @@ def test_obex_capabilities_no_modem():
     with open('./tests/data/mocked-no-modem.xml') as f:
         expected_xml = f.read()
 
-    env = { 'DEVICEINFO_PATH': './tests/data/deviceinfo',
-            'OS_RELEASE_PATH': './tests/data/os-release',
-            'MACHINE_ID_PATH': './tests/data/machine-id' }
+    env = { 'OS_RELEASE_PATH': './tests/data/os-release',
+            'MACHINE_ID_PATH': './tests/data/machine-id',
+            'MOCK_DEVICE': '1' }
     xml = subprocess.check_output('./obex_capabilities/__init__.py',
                                   env=env).decode()
     assert xml == expected_xml
