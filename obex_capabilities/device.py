@@ -87,10 +87,9 @@ class Device(ABC):
         if self._unique_id is not None:
             return self._unique_id
 
-        unique_id: str
         if self._modem is not None:
             debug('Found modem, using IMEI')
-            unique_id = cast(str, self._modem.imei)
+            self._unique_id = cast(str, self._modem.imei)
         else:
             debug('No modem available, using machine-id')
             with open(self._machine_id_path) as f:

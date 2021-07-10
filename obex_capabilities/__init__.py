@@ -99,8 +99,8 @@ def main():
         lvl = DEBUG
     basicConfig(level=lvl)
 
-    device: Device = guess_device()
     modem: Modem = guess_modem()
+    device: Device = guess_device(modem)
 
     # Generate capabilities
     generate_capabilities(device, modem)
