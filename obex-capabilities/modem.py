@@ -1,5 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
+# Copyright (C) 2024 Bardia Moshiri <fakeshell@bardia.tech>
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 from os import environ
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -25,7 +27,6 @@ OFONO_INTERFACE_NETWORK_REGISTRATION = 'org.ofono.NetworkRegistration'
 OFONO_METHOD_GET_PROPERTIES = 'GetProperties'
 OFONO_INTERFACE_MODEM = 'org.ofono.Modem'
 
-
 class Modem(ABC):
     def __repr__(self):
         return f'NETWORK ({self.__class__.__name__})' \
@@ -33,7 +34,6 @@ class Modem(ABC):
             f'\n  IMEI: {self.imei}' \
             f'\n  MCC: {self.mcc}' \
             f'\n  MNC: {self.mnc}' \
-
 
     def __str__(self):
         return self.__repr__()
@@ -67,7 +67,6 @@ class Modem(ABC):
         registered on.
         """
         raise NotImplementedError("Modem ID MNC getter not implemented")
-
 
 class Ofono(Modem):
     """
@@ -122,7 +121,6 @@ class Ofono(Modem):
     @property
     def mnc(self) -> str:
         return self._mnc
-
 
 class ModemManager(Modem):
     """
@@ -181,31 +179,6 @@ class ModemManager(Modem):
     def mnc(self) -> str:
         return self._mnc
 
-
-class MockedModem(Modem):
-    """
-    Mocked modem backend to retrieve network information for tests.
-    """
-    def __init__(self):
-        super().__init__()
-
-    @property
-    def imei(self) -> str:
-        return '123456789012345'
-
-    @property
-    def network(self) -> str:
-        return 'NetworkName'
-
-    @property
-    def mcc(self) -> str:
-        return '123'
-
-    @property
-    def mnc(self) -> str:
-        return '42'
-
-
 def guess_modem() -> Optional[Modem]:
     """
     Tries to access the DBus interface of each support modem backend.
@@ -213,18 +186,13 @@ def guess_modem() -> Optional[Modem]:
     """
     m: Optional[Modem] = None
 
-    # Mock modem is env variable is set
-    if environ.get("MOCK_MODEM", False):
-        m = MockedModem()
-        return m
-
     # ModemManager
     try:
         debug('Trying to access ModemManager DBus interface')
         m = ModemManager()
         return m
     except Exception as e:
-        warning(f'Unable to use ModemManager DBus interface: {e}')
+        debug(f'Unable to use ModemManager DBus interface: {e}')
 
     # Ofono
     try:
@@ -232,7 +200,7 @@ def guess_modem() -> Optional[Modem]:
         m = Ofono()
         return m
     except Exception as e:
-        warning(f'Unable to use oFono DBus interface: {e}')
+        debug(f'Unable to use oFono DBus interface: {e}')
 
     debug('No suitable modem backend available')
     return m

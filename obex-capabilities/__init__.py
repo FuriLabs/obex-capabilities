@@ -1,12 +1,15 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
+# Copyright (C) 2024 Bardia Moshiri <fakeshell@bardia.tech>
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 import sys
 from os.path import realpath, join, dirname
 
 # Add topdir to import path
 topdir = realpath(join(dirname(__file__) + "/.."))  # noqa
 sys.path.insert(0, topdir)  # noqa
+sys.path.insert(0, '/lib')
 
 from argparse import ArgumentParser, SUPPRESS
 from logging import debug, basicConfig, DEBUG, WARNING
@@ -44,7 +47,6 @@ XML_TEMPLATE = """<?xml version="1.0"?>
  </Service>
 </Capability>"""
 
-
 def generate_capabilities(device: Device, modem: Optional[Modem]):
     tree = ElementTree.ElementTree(ElementTree.fromstring(XML_TEMPLATE))
     root = tree.getroot()
@@ -57,12 +59,13 @@ def generate_capabilities(device: Device, modem: Optional[Modem]):
     unique_id = root.findall('./General/SN')[0]
     software = root.findall('./General/SW')[0]
     os = root.findall('./General/OS')[0]
-    manufacturer.text = device.manufacturer
-    model.text = device.model
-    unique_id.text = device.unique_id
-    software.set('version', device.software_version)
-    os.set('version', device.os_version)
-    os.set('id', device.codename)
+
+    manufacturer.text = device.manufacturer if device.manufacturer is not None else ""
+    model.text = device.model if device.model is not None else ""
+    unique_id.text = device.unique_id if device.unique_id is not None else ""
+    software.set('version', device.software_version if device.software_version is not None else "")
+    os.set('version', device.os_version if device.os_version is not None else "")
+    os.set('id', device.codename if device.codename is not None else "")
 
     # Modem information
     if modem is not None:
@@ -84,7 +87,6 @@ def generate_capabilities(device: Device, modem: Optional[Modem]):
     capabilities = ElementTree.tostring(root).decode()
     print(capabilities)
 
-
 def main():
     # Parse arguments
     parser = ArgumentParser(description='Generator tool for OBEX capabilities')
@@ -104,7 +106,6 @@ def main():
 
     # Generate capabilities
     generate_capabilities(device, modem)
-
 
 if __name__ == '__main__':
     main()

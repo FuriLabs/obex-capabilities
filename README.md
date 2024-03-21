@@ -9,29 +9,6 @@ This information is advertised to BlueZ's `obexd`.
 If no modem is available, IMEI is replaced by `machine-id` and the network 
 information is not advertised to `obexd`.
 
-## Dependencies
-
-- dbus-python: Interacting with DBus interfaces
-- pytest: Test framework
-- setuptools: Packaging
-
-## Build & install
-
-**Build**
-```
-python3 setup.py build
-```
-
-**Tests**
-```
-pytest
-```
-
-**Installation**
-```
-python3 setup.py install
-```
-
 ## OBEX Capability specification
 
 https://www.irda.org/standards/pubs/OBEX13.pdf

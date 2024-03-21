@@ -1,5 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Dylan Van Assche <me@dylanvanassche.be>
+# Copyright (C) 2024 Bardia Moshiri <fakeshell@bardia.tech>
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 from os.path import exists
 from os import environ
 from abc import ABC, abstractmethod
@@ -9,12 +11,8 @@ from .modem import Modem
 
 OS_RELEASE_PATH = '/etc/os-release'
 MACHINE_ID_PATH = '/etc/machine-id'
-DMI_MANUFACTURER = '/sys/devices/virtual/dmi/id/sys_vendor'
-DMI_MODEL = '/sys/devices/virtual/dmi/id/product_name'
-DMI_CODENAME = '/sys/devices/virtual/dmi/id/product_name'
 DEVICE_TREE_COMPATIBLE = '/proc/device-tree/compatible'
 DEVICE_TREE_MODEL = '/proc/device-tree/model'
-
 
 class Device(ABC):
     """
@@ -111,13 +109,18 @@ class Device(ABC):
         """
         return self._read_os_release()
 
-
 class ARMDevice(Device):
     def __init__(self, modem=None):
         super().__init__(modem)
 
     @property
     def manufacturer(self) -> str:
+        try:
+            manufacturer = extract_prop('ro.product.vendor.manufacturer')
+            return manufacturer
+        except Exception as e:
+            pass
+
         with open(DEVICE_TREE_COMPATIBLE) as f:
             compatible = f.read().split('\x00')
             manufacturer, _ = compatible[0].split(',')
@@ -125,76 +128,60 @@ class ARMDevice(Device):
 
     @property
     def model(self) -> str:
+        try:
+            model = extract_prop('ro.product.vendor.model')
+            return model
+        except Exception as e:
+            pass
+
         with open(DEVICE_TREE_MODEL) as f:
             model = f.read().split('\x00')[0]
             return model
 
     @property
     def codename(self) -> str:
+        try:
+            codename = extract_prop('ro.product.board')
+            if codename != None:
+                return codename
+
+            codename = extract_prop('ro.product.vendor.device')
+            if codename != None:
+                return codename
+        except Exception as e:
+            pass
+
         with open(DEVICE_TREE_COMPATIBLE) as f:
             compatible = f.read().split('\x00')
             _, codename = compatible[0].split(',')
             return codename
 
+def extract_prop(prop):
+    prop_files = [
+        '/var/lib/lxc/android/rootfs/vendor/build.prop',
+        '/android/vendor/build.prop',
+        '/vendor/build.prop'
+    ]
 
-class x86Device(Device):
-    def __init__(self, modem=None):
-        super().__init__(modem)
+    prop_file = None
+    for file in prop_files:
+        if exists(file):
+            prop_file = file
+            break
 
-    @property
-    def manufacturer(self) -> str:
-        with open(DMI_MANUFACTURER) as f:
-            return f.read().strip()
+    if prop_file == None:
+        return None
 
-    @property
-    def model(self) -> str:
-        with open(DMI_MODEL) as f:
-            return f.read().strip()
-
-    @property
-    def codename(self) -> str:
-        with open(DMI_CODENAME) as f:
-            return f.read().strip()
-
-
-class MockedDevice(Device):
-    def __init__(self, modem=None):
-        super().__init__(modem)
-
-    @property
-    def manufacturer(self) -> str:
-        return 'Manufacturer'
-
-    @property
-    def model(self) -> str:
-        return 'Phone'
-
-    @property
-    def codename(self) -> str:
-        return 'my-awesome-codename'
-
-    @property
-    def unique_id(self) -> str:
-        return '123456789012345'
-
-    @property
-    def software_version(self) -> str:
-        return '1.0.0'
-
-    @property
-    def os_version(self) -> str:
-        return '2.0.0'
-
+    with open(prop_file, 'r') as f:
+        for line in f:
+            if line.startswith(prop):
+                return line.split('=')[1].strip()
+    return None
 
 def guess_device(modem=None):
-    if environ.get('MOCK_DEVICE', False):
-        return MockedDevice(modem)
-    elif exists(DMI_MODEL):
-        debug("Device is x86")
-        return x86Device(modem)
-    elif exists(DEVICE_TREE_COMPATIBLE):
+    if exists(DEVICE_TREE_COMPATIBLE):
         debug("Device is ARM")
         return ARMDevice(modem)
     else:
-        critical("Device not implemented! Falling back to MockedDevice")
-        return MockedDevice(modem)
+        critical("Device not implemented!")
+        return
