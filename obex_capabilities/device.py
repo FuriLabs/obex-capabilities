@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from os.path import exists
-from os import environ
+from os import environ, path
 from abc import ABC, abstractmethod
 from logging import debug, critical
 from typing import Optional, cast
@@ -115,6 +115,10 @@ class ARMDevice(Device):
 
     @property
     def manufacturer(self) -> str:
+        if path.exists("/usr/lib/droidian/device/obex-manufacturer"):
+            with open("/usr/lib/droidian/device/obex-manufacturer", "r") as manufacturer_file:
+                return manufacturer_file.read().strip()
+
         try:
             manufacturer = extract_prop('ro.product.vendor.manufacturer')
             return manufacturer
@@ -128,6 +132,10 @@ class ARMDevice(Device):
 
     @property
     def model(self) -> str:
+        if path.exists("/usr/lib/droidian/device/obex-model"):
+            with open("/usr/lib/droidian/device/obex-model", "r") as model_file:
+                return model_file.read().strip()
+
         try:
             model = extract_prop('ro.product.vendor.model')
             return model
@@ -140,6 +148,10 @@ class ARMDevice(Device):
 
     @property
     def codename(self) -> str:
+        if path.exists("/usr/lib/droidian/device/obex-codename"):
+            with open("/usr/lib/droidian/device/obex-codename", "r") as codename_file:
+                return codename_file.read().strip()
+
         try:
             codename = extract_prop('ro.product.board')
             if codename != None:
