@@ -1,1 +1,2 @@
 obex_capabilities /usr/lib/
+data/10-capabilities.conf /usr/lib/systemd/user/obex.service.d/
