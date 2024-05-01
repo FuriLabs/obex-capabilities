@@ -6,7 +6,7 @@ from os.path import exists
 from os import environ, path
 from abc import ABC, abstractmethod
 from logging import debug, critical
-from typing import Optional, cast
+from typing import cast
 from .modem import Modem
 
 OS_RELEASE_PATH = '/etc/os-release'
@@ -122,7 +122,7 @@ class ARMDevice(Device):
         try:
             manufacturer = extract_prop('ro.product.vendor.manufacturer')
             return manufacturer
-        except Exception as e:
+        except Exception:
             pass
 
         with open(DEVICE_TREE_COMPATIBLE) as f:
@@ -139,7 +139,7 @@ class ARMDevice(Device):
         try:
             model = extract_prop('ro.product.vendor.model')
             return model
-        except Exception as e:
+        except Exception:
             pass
 
         with open(DEVICE_TREE_MODEL) as f:
@@ -154,13 +154,13 @@ class ARMDevice(Device):
 
         try:
             codename = extract_prop('ro.product.board')
-            if codename != None:
+            if codename is not None:
                 return codename
 
             codename = extract_prop('ro.product.vendor.device')
-            if codename != None:
+            if codename is not None:
                 return codename
-        except Exception as e:
+        except Exception:
             pass
 
         with open(DEVICE_TREE_COMPATIBLE) as f:
@@ -181,7 +181,7 @@ def extract_prop(prop):
             prop_file = file
             break
 
-    if prop_file == None:
+    if prop_file is None:
         return None
 
     with open(prop_file, 'r') as f:

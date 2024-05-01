@@ -4,19 +4,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import sys
-from os.path import realpath, join, dirname
+from os import environ
+from os.path import realpath, join, dirname, abspath
+from argparse import ArgumentParser, SUPPRESS
+from logging import debug, basicConfig, DEBUG, WARNING
+from xml.etree import ElementTree
+from typing import Tuple, Optional, cast
 
 # Add topdir to import path
 topdir = realpath(join(dirname(__file__) + "/.."))  # noqa
 sys.path.insert(0, topdir)  # noqa
 sys.path.insert(0, '/lib')
-
-from argparse import ArgumentParser, SUPPRESS
-from logging import debug, basicConfig, DEBUG, WARNING
-from xml.etree import ElementTree
-from typing import Tuple, Optional, cast
-from os import environ
-from os.path import abspath
 
 from obex_capabilities.device import Device, guess_device
 from obex_capabilities.modem import Modem, guess_modem

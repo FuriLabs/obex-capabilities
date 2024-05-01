@@ -2,10 +2,9 @@
 # Copyright (C) 2024 Bardia Moshiri <fakeshell@bardia.tech>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from os import environ
 from abc import ABC, abstractmethod
 from typing import Optional
-from logging import debug, warning
+from logging import debug
 
 from dbus import SystemBus, Interface  # type: ignore
 
