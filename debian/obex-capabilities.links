@@ -1,2 +1,2 @@
 /usr/lib/obex_capabilities/__init__.py /usr/bin/obex-capabilities
-/usr/lib/systemd/user/obex.service /usr/lib/systemd/user/sm.puri.Phosh.target.wants/obex.service
+/usr/lib/systemd/user/obex.service /usr/lib/systemd/user/mobi.phosh.Shell.target.wants/obex.service
